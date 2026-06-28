@@ -1,0 +1,24 @@
+{
+  "name": "taskflow-backend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "migrate": "node src/db/migrate_all.js",
+    "seed": "node src/db/seed.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "pg": "^8.8.0",
+    "pg-format": "^1.0.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

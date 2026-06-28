@@ -17,6 +17,10 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Teams from "./pages/Teams";
 import Tasks from "./pages/Tasks";
 import Messages from "./pages/Messages";
+import Attendance from "./pages/Attendance";
+import Performance from "./pages/Performance";
+import Leaderboard from "./pages/Leaderboard";
+import Announcements from "./pages/Announcements";
 import UsersManagement from "./pages/UsersManagement";
 import AdminTaskProvider from "./pages/AdminTaskProvider";
 import Deployments from "./pages/Deployments";
@@ -39,10 +43,14 @@ const App = () => (<QueryClientProvider client={queryClient}>
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />}/>
               <Route path="/analytics" element={<Analytics />}/>
+              <Route path="/announcements" element={<ProtectedRoute requiredPermission="announcements:view"><Announcements /></ProtectedRoute>}/>
+              <Route path="/attendance" element={<ProtectedRoute requiredPermission="attendance:view"><Attendance /></ProtectedRoute>}/>
               <Route path="/projects" element={<Projects />}/>
               <Route path="/projects/:projectId" element={<ProjectDetail />}/>
               <Route path="/teams" element={<ProtectedRoute requiredPermission="teams:manage"><Teams /></ProtectedRoute>}/>
               <Route path="/tasks" element={<Tasks />}/>
+              <Route path="/performance" element={<ProtectedRoute requiredPermission="performance:view"><Performance /></ProtectedRoute>}/>
+              <Route path="/leaderboard" element={<ProtectedRoute requiredPermission="leaderboard:view"><Leaderboard /></ProtectedRoute>}/>
               <Route path="/messages" element={<ProtectedRoute requiredPermission="chat:view"><Messages /></ProtectedRoute>}/>
               <Route path="/deployments" element={<ProtectedRoute requiredPermission="deployments:view"><Deployments /></ProtectedRoute>}/>
               <Route path="/project-submissions" element={<ProtectedRoute requiredPermission="projects:view"><ProjectSubmissions /></ProtectedRoute>}/>

@@ -3,6 +3,8 @@ export const ROLES = {
     PROJECT_MANAGER: 'PROJECT_MANAGER',
     TEAM_LEADER: 'TEAM_LEADER',
     TEAM_MEMBER: 'TEAM_MEMBER',
+    HR: 'HR',
+    INTERN: 'INTERN',
 };
 
 const legacyToAppRole = {
@@ -14,6 +16,8 @@ const appToDbRole = {
     [ROLES.PROJECT_MANAGER]: 'PROJECT_MANAGER',
     [ROLES.TEAM_LEADER]: 'TEAM_LEADER',
     [ROLES.TEAM_MEMBER]: 'TEAM_MEMBER',
+    [ROLES.HR]: 'HR',
+    [ROLES.INTERN]: 'INTERN',
 };
 
 export function normalizeRole(role) {
@@ -55,6 +59,13 @@ const rolePermissions = {
         'deployments:approve',
         'deployments:deploy',
         'deployments:view',
+        'attendance:view',
+        'attendance:mark',
+        'announcements:manage',
+        'announcements:view',
+        'performance:view',
+        'performance:manage',
+        'leaderboard:view',
     ],
     PROJECT_MANAGER: [
         'tasks:create',
@@ -77,6 +88,11 @@ const rolePermissions = {
         'deployments:approve',
         'deployments:deploy',
         'deployments:view',
+        'attendance:view',
+        'attendance:mark',
+        'announcements:view',
+        'performance:view',
+        'leaderboard:view',
     ],
     TEAM_LEADER: [
         'tasks:update-own-status',
@@ -91,6 +107,11 @@ const rolePermissions = {
         'projects:submit',
         'deployments:create',
         'deployments:view',
+        'attendance:view',
+        'attendance:mark',
+        'announcements:view',
+        'performance:view',
+        'leaderboard:view',
     ],
     TEAM_MEMBER: [
         'tasks:view',
@@ -103,6 +124,34 @@ const rolePermissions = {
         'projects:submit',
         'deployments:create',
         'deployments:view',
+        'attendance:mark',
+        'attendance:view',
+        'announcements:view',
+        'performance:view',
+        'leaderboard:view',
+    ],
+    HR: [
+        'users:manage',
+        'users:assign-role',
+        'reports:view',
+        'attendance:view',
+        'attendance:mark',
+        'announcements:manage',
+        'announcements:view',
+        'performance:view',
+        'performance:manage',
+        'leaderboard:view',
+    ],
+    INTERN: [
+        'tasks:view',
+        'chat:view',
+        'chat:send',
+        'dashboard:view',
+        'projects:view',
+        'attendance:mark',
+        'announcements:view',
+        'performance:view',
+        'leaderboard:view',
     ],
 };
 export function hasPermission(role, permission) {

@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar, } from '@/components/ui/sidebar';
-import { LayoutDashboard, FolderKanban, ListChecks, Users, Layers, LogOut, BarChart3, BriefcaseBusiness, MessagesSquare, Package, } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ListChecks, Users, Layers, LogOut, BarChart3, BriefcaseBusiness, MessagesSquare, Package, CalendarCheck, Star, Trophy, Megaphone, } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { roleLabel } from '@/lib/rbac';
 const coreMenuItems = [
@@ -12,6 +12,10 @@ const coreMenuItems = [
     { title: 'Messages & Calls', url: '/messages', icon: MessagesSquare, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER'] },
     { title: 'Deployments', url: '/deployments', icon: Package, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER'] },
     { title: 'Analytics', url: '/analytics', icon: BarChart3, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER'] },
+    { title: 'Announcements', url: '/announcements', icon: Megaphone, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Attendance', url: '/attendance', icon: CalendarCheck, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Performance', url: '/performance', icon: Star, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR'] },
+    { title: 'Leaderboard', url: '/leaderboard', icon: Trophy, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
 ];
 const adminMenuItems = [
     { title: 'Users', url: '/users', icon: Users, roles: ['ADMIN'] },

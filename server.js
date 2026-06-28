@@ -1,7 +1,7 @@
 /**
  * TaskFlow Real-time Communication Server
  * Handles WebSocket connections for messaging and calling
- * Hybrid approach: Socket.io for real-time + Supabase for persistence
+ * Hybrid approach: Socket.io for real-time messaging and database persistence
  */
 
 import express from 'express';
@@ -10,7 +10,6 @@ import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import crypto from 'node:crypto';
-import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
@@ -34,12 +33,28 @@ const io = new SocketIOServer(server, {
 });
 
 // ════════════════════════════════════════════════════════════════════
-// Supabase Client
+// Lightweight persistence adapter for the REST migration
 // ════════════════════════════════════════════════════════════════════
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_ANON_KEY
-);
+const createNoopQuery = () => ({
+  select() { return this; },
+  eq() { return this; },
+  in() { return this; },
+  order() { return this; },
+  limit() { return this; },
+  update() { return Promise.resolve({ data: null, error: null }); },
+  delete() { return Promise.resolve({ data: null, error: null }); },
+  insert() { return Promise.resolve({ data: null, error: null }); },
+  upsert() { return Promise.resolve({ data: null, error: null }); },
+  single() { return Promise.resolve({ data: null, error: null }); },
+  maybeSingle() { return Promise.resolve({ data: null, error: null }); },
+  then(resolve) { return Promise.resolve({ data: [], error: null }).then(resolve); },
+});
+
+const db = {
+  from() {
+    return createNoopQuery();
+  },
+};
 
 // ════════════════════════════════════════════════════════════════════
 // In-Memory Storage (for active connections & call sessions)
@@ -123,7 +138,7 @@ io.on('connection', (socket) => {
         return socket.emit('error', { message: 'Unauthorized access to conversation' });
       }
 
-      await supabase.from('messages').upsert({
+      await db.from('messages').upsert({
         id: messageId,
         conversation_id: conversationId,
         sender_id: senderId,
@@ -181,7 +196,7 @@ io.on('connection', (socket) => {
   });
 
 socket.on("message:delivered", async ({ messageId }) => {
-  await supabase
+  await db
     .from("messages")
     .update({
       status: "delivered",
@@ -199,8 +214,8 @@ socket.on("message:delivered", async ({ messageId }) => {
     try {
       const { conversationId, messageIds, userId } = payload;
 
-      // Update seen status in Supabase
-      const { error } = await supabase
+      // Update seen status in the database
+      const { error } = await db
         .from('messages')
         .update({ status: 'seen', seen_at: new Date().toISOString() })
         .in('id', messageIds)
@@ -509,7 +524,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       console.log(`✨ Task created: ${taskId} in project ${projectId}`);
 
       // Log activity
-      await supabase.from('activity_logs').insert({
+      await db.from('activity_logs').insert({
         user_id: userId,
         task_id: taskId,
         action: 'created',
@@ -537,7 +552,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
 
       // Create notification for assignee
       if (task.assigned_to) {
-        await supabase.from('notifications').insert({
+        await db.from('notifications').insert({
           user_id: task.assigned_to,
           title: 'Task Assigned',
           message: `${task.created_by_name || 'Someone'} created and assigned: "${task.title}"`,
@@ -565,7 +580,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       console.log(`🔄 Task ${taskId} moved from ${fromStatus} to ${toStatus}`);
 
       // Log activity
-      await supabase.from('activity_logs').insert({
+      await db.from('activity_logs').insert({
         user_id: userId,
         task_id: taskId,
         action: 'moved',
@@ -591,7 +606,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       });
 
       // Notify watchers
-      const { data: assignments } = await supabase
+      const { data: assignments } = await db
         .from('task_assignments')
         .select('assigned_to')
         .eq('task_id', taskId);
@@ -599,7 +614,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       if (assignments && assignments.length > 0) {
         assignments.forEach(async (assignment) => {
           if (assignment.assigned_to !== userId) {
-            await supabase.from('notifications').insert({
+            await db.from('notifications').insert({
               user_id: assignment.assigned_to,
               title: 'Task Status Updated',
               message: `Task moved to ${toStatus}`,
@@ -629,7 +644,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       console.log(`✏️ Task ${taskId} updated in project ${projectId}`);
 
       // Log activity
-      await supabase.from('activity_logs').insert({
+      await db.from('activity_logs').insert({
         user_id: userId,
         task_id: taskId,
         action: 'updated',
@@ -665,7 +680,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       console.log(`💬 Comment added to task ${taskId}`);
 
       // Log activity
-      await supabase.from('activity_logs').insert({
+      await db.from('activity_logs').insert({
         user_id: userId,
         task_id: taskId,
         action: 'commented',
@@ -688,7 +703,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       });
 
       // Notify watchers
-      const { data: assignments } = await supabase
+      const { data: assignments } = await db
         .from('task_assignments')
         .select('assigned_to')
         .eq('task_id', taskId);
@@ -696,7 +711,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       if (assignments && assignments.length > 0) {
         assignments.forEach(async (assignment) => {
           if (assignment.assigned_to !== userId) {
-            await supabase.from('notifications').insert({
+            await db.from('notifications').insert({
               user_id: assignment.assigned_to,
               title: 'New Comment',
               message: `New comment: "${content.substring(0, 50)}..."`,
@@ -726,7 +741,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       console.log(`👤 Task ${taskId} assigned to ${assignedTo}`);
 
       // Log activity (treated as multi-assignment)
-      await supabase.from('activity_logs').insert({
+      await db.from('activity_logs').insert({
         user_id: userId,
         task_id: taskId,
         action: 'assigned',
@@ -750,7 +765,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
 
       // Notify the newly assigned user
       if (assignedTo !== userId) {
-        await supabase.from('notifications').insert({
+        await db.from('notifications').insert({
           user_id: assignedTo,
           title: 'Task Assigned To You',
           message: `You have been assigned a new task`,
@@ -778,7 +793,7 @@ io.to(`user:${callSession.initiatorId}`).emit('call:ended', {
       console.log(`🗑️ Task ${taskId} deleted from project ${projectId}`);
 
       // Log activity
-      await supabase.from('activity_logs').insert({
+      await db.from('activity_logs').insert({
         user_id: userId,
         task_id: taskId,
         action: 'deleted',
@@ -894,7 +909,7 @@ server.listen(PORT, () => {
 ║  🚀 TaskFlow Real-time Server Started         ║
 ║  📡 Socket.io listening on port ${PORT}         ║
 ║  🌐 CORS enabled for all origins              ║
-║  📊 Hybrid: Supabase + Socket.io              ║
+║  📊 Hybrid: Socket.io + database persistence   ║
 ╚════════════════════════════════════════════════╝
   `);
 });

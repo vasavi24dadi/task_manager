@@ -6,6 +6,8 @@ export const mockUsers = [
     { id: 'u5', name: 'Vikram Singh', email: 'vikram@taskflow.io', role: 'TEAM_LEADER', status: 'active', avatar: '', createdAt: '2025-04-05T11:45:00Z' },
     { id: 'u6', name: 'Ananya Das', email: 'ananya@taskflow.io', role: 'TEAM_MEMBER', status: 'active', avatar: '', createdAt: '2025-04-10T13:20:00Z' },
     { id: 'u7', name: 'Karan Verma', email: 'karan@taskflow.io', role: 'TEAM_MEMBER', status: 'active', avatar: '', createdAt: '2025-04-18T15:45:00Z' },
+    { id: 'u8', name: 'Meera Iyer', email: 'meera@taskflow.io', role: 'HR', status: 'active', avatar: '', createdAt: '2025-05-01T09:00:00Z' },
+    { id: 'u9', name: 'Arjun Rao', email: 'arjun@taskflow.io', role: 'INTERN', status: 'active', avatar: '', createdAt: '2025-06-01T09:00:00Z' },
 ];
 export const mockProjects = [
     { id: 'p1', title: 'Website Redesign', description: 'Complete overhaul of the company website with modern design and improved UX.', createdBy: 'u1', assignedUsers: ['u2', 'u3', 'u5'], deadline: '2026-06-30T00:00:00Z', priority: 'high', createdAt: '2025-05-01T08:00:00Z' },
@@ -59,5 +61,22 @@ export const mockCredentials = [
     { email: 'rohan@taskflow.io', password: 'user123', userId: 'u3' },
     { email: 'sneha@taskflow.io', password: 'user123', userId: 'u4' },
     { email: 'vikram@taskflow.io', password: 'user123', userId: 'u5' },
+];
+
+export const mockAttendance = [
+    { id: 'a1', userId: 'u2', checkIn: '2026-06-23T08:59:00Z', checkOut: '2026-06-23T17:05:00Z', hours: 8.1 },
+    { id: 'a2', userId: 'u3', checkIn: '2026-06-23T09:15:00Z', checkOut: '2026-06-23T17:30:00Z', hours: 8.25 },
+    { id: 'a3', userId: 'u4', checkIn: '2026-06-23T09:00:00Z', checkOut: '2026-06-23T16:45:00Z', hours: 7.75 },
+];
+
+export const mockPerformance = [
+    { id: 'pfs1', userId: 'u2', score: 88, period: '2026-Q2', notes: 'Strong delivery, good collaboration' },
+    { id: 'pfs2', userId: 'u3', score: 79, period: '2026-Q2', notes: 'Consistent work but needs to improve tests' },
+    { id: 'pfs3', userId: 'u5', score: 92, period: '2026-Q2', notes: 'Excellent performance and mentorship' },
+];
+
+export const mockAnnouncements = [
+    { id: 'ann1', title: 'All-hands on Friday', message: 'Company-wide all-hands at 10am in the main channel.', createdBy: 'u1', createdAt: '2026-06-20T08:00:00Z' },
+    { id: 'ann2', title: 'Holiday Notice', message: 'Office closed on July 4th.', createdBy: 'u8', createdAt: '2026-06-15T12:00:00Z' },
 ];
 
