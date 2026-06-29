@@ -80,65 +80,79 @@ router.get('/:id', requireAuth, async (req, res) => {
 // ============================================================================
 // CREATE USER (Admin/HR only)
 // ============================================================================
+// ============================================================================
+// CREATE USER (Admin/HR only)
+// ============================================================================
 router.post('/', requireAuth, requireRole('ADMIN', 'HR'), async (req, res) => {
-  const { name, email, password, roleId, status } = req.body;
+  let { name, email, password, roleId, status } = req.body;
 
   if (!email) {
     return res.status(400).json({ error: 'Email is required' });
   }
 
-  if (!password || password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
-  }
+  // Use a default password if frontend doesn't send one
+  password = password || 'welcome123';
 
   const pool = getPool();
+
   try {
     // Check if email already exists
-    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    const existing = await pool.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email]
+    );
+
     if (existing.rowCount > 0) {
       return res.status(409).json({ error: 'Email already in use' });
     }
 
-    // Verify role exists
-    let finalRoleId = roleId;
-    if (!finalRoleId) {
-      const { rows } = await pool.query('SELECT id FROM roles WHERE name = $1', ['INTERN']);
-      finalRoleId = rows[0]?.id;
+    // Find role id if only role name is sent
+    if (!roleId && req.body.role) {
+      const roleResult = await pool.query(
+        'SELECT id FROM roles WHERE name = $1',
+        [req.body.role]
+      );
+      roleId = roleResult.rows[0]?.id;
     }
 
-    if (!finalRoleId) {
-      return res.status(400).json({ error: 'Invalid role' });
+    // Default role = INTERN
+    if (!roleId) {
+      const roleResult = await pool.query(
+        'SELECT id FROM roles WHERE name = $1',
+        ['INTERN']
+      );
+      roleId = roleResult.rows[0]?.id;
+    }
+
+    if (!roleId) {
+      return res.status(400).json({ error: 'Role not found' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+
     const { rows } = await pool.query(
-      `INSERT INTO users (name, email, password_hash, role_id, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, now())
-       RETURNING id, name, email, status, avatar_url, created_at`,
-      [name || 'User', email, passwordHash, finalRoleId, status || 'active']
-    );
-
-    if (rows.length === 0) {
-      return res.status(500).json({ error: 'Failed to create user' });
-    }
-
-    const user = rows[0];
-    
-    // Log activity
-    await pool.query(
-      `INSERT INTO activity_logs (user_id, action, entity_type, entity_id, created_at)
-       VALUES ($1, $2, $3, $4, now())`,
-      [req.userId, 'create_user', 'user', user.id]
+      `INSERT INTO users
+      (name,email,password_hash,role_id,status,created_at)
+      VALUES($1,$2,$3,$4,$5,now())
+      RETURNING id,name,email,status,avatar_url,created_at`,
+      [
+        name || 'User',
+        email,
+        passwordHash,
+        roleId,
+        status || 'active'
+      ]
     );
 
     res.status(201).json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      status: user.status,
-      avatarUrl: user.avatar_url,
-      createdAt: user.created_at,
+      id: rows[0].id,
+      name: rows[0].name,
+      email: rows[0].email,
+      status: rows[0].status,
+      avatarUrl: rows[0].avatar_url,
+      createdAt: rows[0].created_at
     });
+
   } catch (err) {
     console.error('[CREATE_USER]', err);
     res.status(500).json({ error: 'Server error' });

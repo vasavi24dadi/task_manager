@@ -221,7 +221,7 @@ export async function deleteProject(id) {
 }
 
 export async function getProjectMembers(projectId) {
-  return [];
+  return await fetchJson(`/projects/${projectId}/members`);
 }
 
 export async function assignProjectManager(projectId, userId) {
@@ -229,7 +229,15 @@ export async function assignProjectManager(projectId, userId) {
 }
 
 export async function assignProjectMembers(projectId, userIds) {
-  return { projectId, userIds };
+  return await fetchJson(
+    `/projects/${projectId}/members`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        userIds,
+      }),
+    }
+  );
 }
 
 export async function getTasks() {

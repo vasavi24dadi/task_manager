@@ -44,15 +44,25 @@ export default function AdminTaskProvider() {
     useEffect(() => {
         load();
       }, [load]);
-    const projectIdsByUser = useMemo(() => {
-        const map = {};
-        for (const p of projects) {
-            for (const uid of p.assignedUsers) {
-                map[uid] = map[uid] ? [...map[uid], p.id] : [p.id];
+   const projectIdsByUser = useMemo(() => {
+    const map = {};
+
+    for (const p of projects) {
+        const assignedUsers = Array.isArray(p.assignedUsers)
+            ? p.assignedUsers
+            : [];
+
+        for (const uid of assignedUsers) {
+            if (!map[uid]) {
+                map[uid] = [];
             }
+
+            map[uid].push(p.id);
         }
-        return map;
-    }, [projects]);
+    }
+
+    return map;
+}, [projects]);
     const activeUsers = useMemo(() => users.filter((u) => u.role === 'TEAM_LEADER' && u.status === 'active'), [users]);
     const newUsers = useMemo(() => {
         const now = Date.now();
@@ -76,7 +86,11 @@ export default function AdminTaskProvider() {
             toast({ title: 'Project not found', variant: 'destructive' });
             return;
         }
-        if (project.assignedUsers.includes(userId)) {
+        const assignedUsers = Array.isArray(project.assignedUsers)
+    ? project.assignedUsers
+    : [];
+
+if (assignedUsers.includes(userId)) {
             toast({ title: 'User already assigned to this project' });
             return;
         }
@@ -104,7 +118,7 @@ export default function AdminTaskProvider() {
                 description,
                 priority,
                 deadline: new Date(deadline).toISOString(),
-                assignedUsers: [assignee],
+                assignedUsers: assignee ? [assignee] : [],
                 createdBy: user.id,
             });
             toast({ title: 'New project created and assigned' });
