@@ -296,15 +296,15 @@ export async function deleteTeam(id) {
 
 export async function getNotificationsForUser(userId) {
   try {
-    const rows = await fetchJson(`/notifications/user/${userId}`);
+    const rows = await fetchJson('/notifications');
     return (rows || []).map((row) => ({
       id: row.id,
-      userId: row.userId,
+      userId: row.userId || row.user_id,
       title: row.title,
       message: row.message,
-      read: row.read,
+      read: row.isRead ?? row.read,
       type: row.type,
-      createdAt: row.createdAt,
+      createdAt: row.createdAt || row.created_at,
     }));
   } catch {
     return [];
@@ -312,11 +312,11 @@ export async function getNotificationsForUser(userId) {
 }
 
 export async function markNotificationRead(id) {
-  return { id, read: true };
+  return fetchJson(`/notifications/${id}/read`, { method: 'PUT' });
 }
 
 export async function markAllNotificationsRead(userId) {
-  return { userId, markedAllRead: true };
+  return fetchJson('/notifications/read/all', { method: 'PUT' });
 }
 
 export async function createAttendance(payload) {

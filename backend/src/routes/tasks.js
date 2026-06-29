@@ -111,6 +111,14 @@ router.post('/', requireAuth, requireRole('ADMIN', 'MANAGER', 'HR'), async (req,
 
     const created = rows[0];
 
+    if (assignedTo && assignedTo !== req.userId) {
+      await pool.query(
+        `INSERT INTO notifications (user_id, type, title, message, related_entity_type, related_entity_id, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, now())`,
+        [assignedTo, 'task_assigned', 'Task assigned', `You were assigned to task "${title}"`, 'task', created.id]
+      );
+    }
+
     // Fetch names for created object
     const nameRes = await pool.query(
       `SELECT pa.name as assigned_name, pc.name as created_name
@@ -169,6 +177,14 @@ router.put('/:id', requireAuth, async (req, res) => {
     values.push(taskId);
 
     const { rows } = await pool.query(sql, values);
+
+    if (assignedTo !== undefined && assignedTo !== task.assigned_to && assignedTo !== req.userId) {
+      await pool.query(
+        `INSERT INTO notifications (user_id, type, title, message, related_entity_type, related_entity_id, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, now())`,
+        [assignedTo, 'task_assigned', 'Task assigned', `You were assigned to task "${title || rows[0].title}"`, 'task', rows[0].id]
+      );
+    }
 
     // Attach names
     const nameRes = await pool.query(

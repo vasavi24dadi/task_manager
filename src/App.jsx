@@ -27,6 +27,7 @@ import Deployments from "./pages/Deployments";
 import ProjectSubmissions from "./pages/ProjectSubmissions";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Unauthorized from "./pages/Unauthorized";
 const queryClient = new QueryClient();
 const App = () => (<QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -40,6 +41,7 @@ const App = () => (<QueryClientProvider client={queryClient}>
             <Route path="/login" element={<LoginPage />}/>
             <Route path="/register" element={<RegisterPage />}/>
             <Route path="/auth/callback" element={<OAuthCallback />}/>
+            <Route path="/unauthorized" element={<Unauthorized />}/>
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />}/>
               <Route path="/analytics" element={<Analytics />}/>

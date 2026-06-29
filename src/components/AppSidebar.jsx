@@ -6,22 +6,22 @@ import { LayoutDashboard, FolderKanban, ListChecks, Users, Layers, LogOut, BarCh
 import { Button } from '@/components/ui/button';
 import { roleLabel } from '@/lib/rbac';
 const coreMenuItems = [
-    { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER'] },
-    { title: 'Projects', url: '/projects', icon: FolderKanban, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER'] },
-    { title: 'Tasks', url: '/tasks', icon: ListChecks, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER'] },
-    { title: 'Messages & Calls', url: '/messages', icon: MessagesSquare, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER'] },
-    { title: 'Deployments', url: '/deployments', icon: Package, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER'] },
-    { title: 'Analytics', url: '/analytics', icon: BarChart3, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER'] },
-    { title: 'Announcements', url: '/announcements', icon: Megaphone, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
-    { title: 'Attendance', url: '/attendance', icon: CalendarCheck, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
-    { title: 'Performance', url: '/performance', icon: Star, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR'] },
-    { title: 'Leaderboard', url: '/leaderboard', icon: Trophy, roles: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Projects', url: '/projects', icon: FolderKanban, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Tasks', url: '/tasks', icon: ListChecks, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Messages & Calls', url: '/messages', icon: MessagesSquare, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Deployments', url: '/deployments', icon: Package, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Analytics', url: '/analytics', icon: BarChart3, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Announcements', url: '/announcements', icon: Megaphone, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Attendance', url: '/attendance', icon: CalendarCheck, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
+    { title: 'Performance', url: '/performance', icon: Star, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR'] },
+    { title: 'Leaderboard', url: '/leaderboard', icon: Trophy, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
 ];
 const adminMenuItems = [
-    { title: 'Users', url: '/users', icon: Users, roles: ['ADMIN'] },
+    { title: 'Users', url: '/users', icon: Users, roles: ['ADMIN', 'HR'] },
     { title: 'Teams', url: '/teams', icon: Users, roles: ['ADMIN'] },
-    { title: 'Task Provider', url: '/admin-provider', icon: BriefcaseBusiness, roles: ['ADMIN', 'PROJECT_MANAGER'] },
-    { title: 'Project Submissions', url: '/project-submissions', icon: Package, roles: ['ADMIN', 'PROJECT_MANAGER'] },
+    { title: 'Task Provider', url: '/admin-provider', icon: BriefcaseBusiness, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER'] },
+    { title: 'Project Submissions', url: '/project-submissions', icon: Package, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER'] },
 ];
 export function AppSidebar() {
     const { user, hasRole, logout } = useAuth();

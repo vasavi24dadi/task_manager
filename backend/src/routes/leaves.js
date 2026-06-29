@@ -68,7 +68,15 @@ router.put('/:id', requireAuth, requireRole('HR', 'ADMIN'), async (req, res) => 
       [status, req.userId, req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Leave request not found' });
-    res.json(rows[0]);
+
+    const updated = rows[0];
+    await pool.query(
+      `INSERT INTO notifications (user_id, type, title, message, related_entity_type, related_entity_id, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, now())`,
+      [updated.user_id, 'leave_status', 'Leave request updated', `Your leave request was ${status}.`, 'leave', updated.id]
+    );
+
+    res.json(updated);
   } catch (err) {
     console.error('Error updating leave request:', err);
     res.status(500).json({ error: 'Server error' });

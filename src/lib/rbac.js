@@ -1,5 +1,6 @@
 export const ROLES = {
     ADMIN: 'ADMIN',
+    MANAGER: 'MANAGER',
     PROJECT_MANAGER: 'PROJECT_MANAGER',
     TEAM_LEADER: 'TEAM_LEADER',
     TEAM_MEMBER: 'TEAM_MEMBER',
@@ -9,13 +10,16 @@ export const ROLES = {
 
 const legacyToAppRole = {
     VIEWER: ROLES.TEAM_MEMBER,
+    PROJECT_MANAGER: ROLES.MANAGER,
+    TEAM_LEADER: ROLES.MANAGER,
 };
 
 const appToDbRole = {
     [ROLES.ADMIN]: 'ADMIN',
-    [ROLES.PROJECT_MANAGER]: 'PROJECT_MANAGER',
-    [ROLES.TEAM_LEADER]: 'TEAM_LEADER',
-    [ROLES.TEAM_MEMBER]: 'TEAM_MEMBER',
+    [ROLES.MANAGER]: 'MANAGER',
+    [ROLES.PROJECT_MANAGER]: 'MANAGER',
+    [ROLES.TEAM_LEADER]: 'MANAGER',
+    [ROLES.TEAM_MEMBER]: 'INTERN',
     [ROLES.HR]: 'HR',
     [ROLES.INTERN]: 'INTERN',
 };
@@ -65,6 +69,36 @@ const rolePermissions = {
         'announcements:view',
         'performance:view',
         'performance:manage',
+        'leaderboard:view',
+    ],
+    MANAGER: [
+        'projects:create',
+        'projects:update',
+        'projects:delete',
+        'projects:view',
+        'projects:submit',
+        'projects:approve',
+        'tasks:create',
+        'tasks:update',
+        'tasks:delete',
+        'tasks:assign',
+        'tasks:view',
+        'comments:add',
+        'chat:view',
+        'chat:send',
+        'chat:create-group',
+        'calls:initiate',
+        'calls:join',
+        'reports:view',
+        'dashboard:view',
+        'deployments:create',
+        'deployments:approve',
+        'deployments:deploy',
+        'deployments:view',
+        'attendance:view',
+        'attendance:mark',
+        'announcements:view',
+        'performance:view',
         'leaderboard:view',
     ],
     PROJECT_MANAGER: [

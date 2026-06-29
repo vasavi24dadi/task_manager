@@ -14,9 +14,9 @@ import { extractErrorMessage, roleLabel } from '@/lib/rbac';
 export default function UsersPage() {
     const rolePriority = {
       ADMIN: 1,
-      PROJECT_MANAGER: 2,
-      TEAM_LEADER: 3,
-      TEAM_MEMBER: 4,
+      MANAGER: 2,
+      HR: 3,
+      INTERN: 4,
     };
     const [users, setUsers] = useState([]);
     const [search, setSearch] = useState('');
@@ -136,7 +136,7 @@ export default function UsersPage() {
 function UserForm({ user, onSave }) {
     const [name, setName] = useState(user?.name || '');
     const [email, setEmail] = useState(user?.email || '');
-    const [role, setRole] = useState(user?.role || 'TEAM_MEMBER');
+    const [role, setRole] = useState(user?.role || 'INTERN');
     const [status, setStatus] = useState(user?.status || 'active');
     const [errors, setErrors] = useState({});
     const { toast } = useToast();
@@ -173,9 +173,9 @@ function UserForm({ user, onSave }) {
           <Select value={role} onValueChange={v => setRole(v)}>
             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Role"/></SelectTrigger>
             <SelectContent>
-              <SelectItem value="TEAM_MEMBER">TEAM_MEMBER</SelectItem>
-              <SelectItem value="TEAM_LEADER">TEAM_LEADER</SelectItem>
-              <SelectItem value="PROJECT_MANAGER">PROJECT_MANAGER</SelectItem>
+              <SelectItem value="INTERN">INTERN</SelectItem>
+              <SelectItem value="HR">HR</SelectItem>
+              <SelectItem value="MANAGER">MANAGER</SelectItem>
               <SelectItem value="ADMIN">ADMIN</SelectItem>
             </SelectContent>
           </Select>
