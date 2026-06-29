@@ -29,12 +29,18 @@ function mapUserResponse(user, role) {
 // REGISTER
 // ============================================================================
 router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role: requestedRole } = req.body;
+  const role = (requestedRole || 'INTERN').toString().trim().toUpperCase();
+  const allowedRoles = ['INTERN', 'HR', 'MANAGER'];
+
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
   if (password.length < 6) {
     return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+  if (!allowedRoles.includes(role)) {
+    return res.status(400).json({ error: 'Invalid role selected' });
   }
 
   const pool = getPool();
@@ -44,11 +50,10 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Email already registered' });
     }
 
-    // Default registration to INTERN role
-    const roleRes = await pool.query('SELECT id, name FROM roles WHERE name=$1', ['INTERN']);
-    const role = roleRes.rows[0];
-    if (!role) {
-      return res.status(500).json({ error: 'Default role not found' });
+    const roleRes = await pool.query('SELECT id, name FROM roles WHERE name=$1', [role]);
+    const roleRow = roleRes.rows[0];
+    if (!roleRow) {
+      return res.status(400).json({ error: 'Selected role is not available' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -56,7 +61,7 @@ router.post('/register', async (req, res) => {
       `INSERT INTO users (name, email, password_hash, role_id, status, created_at) 
        VALUES ($1, $2, $3, $4, $5, now()) 
        RETURNING id, name, email, status, avatar_url, created_at, last_login`,
-      [name || 'User', email, passwordHash, role.id, 'active']
+      [name || 'User', email, passwordHash, roleRow.id, 'active']
     );
     
     if (rows.length === 0) {
@@ -64,10 +69,10 @@ router.post('/register', async (req, res) => {
     }
 
     const user = rows[0];
-    const token = signToken({ sub: user.id, role: role.name });
+    const token = signToken({ sub: user.id, role: roleRow.name });
     
     return res.status(201).json({ 
-      user: mapUserResponse(user, role.name), 
+      user: mapUserResponse(user, roleRow.name), 
       token 
     });
   } catch (err) {

@@ -11,6 +11,7 @@ export default function RegisterPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('INTERN');
     const [loading, setLoading] = useState(false);
     const { register } = useAuth();
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const registeredUser = await register(name, email, password);
+        const registeredUser = await register(name, email, password, role);
         setLoading(false);
         if (registeredUser) {
             const userRole = registeredUser.role ? roleLabel(registeredUser.role) : 'Team Member';
@@ -47,6 +48,20 @@ export default function RegisterPage() {
               <FloatingInput id="name" label="Full Name" value={name} onChange={e => setName(e.target.value)} required/>
               <FloatingInput id="email" type="email" label="Email" value={email} onChange={e => setEmail(e.target.value)} required/>
               <FloatingInput id="password" type="password" label="Password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6}/>
+              <div className="space-y-1">
+                <label htmlFor="role" className="block text-sm font-medium text-muted-foreground">Register as</label>
+                <select
+                  id="role"
+                  value={role}
+                  onChange={e => setRole(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-md border border-slate-200 bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="INTERN">Intern</option>
+                  <option value="HR">HR</option>
+                  <option value="MANAGER">Manager</option>
+                </select>
+              </div>
               <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Creating…' : 'Create account'}</Button>
             </form>
           </CardContent>

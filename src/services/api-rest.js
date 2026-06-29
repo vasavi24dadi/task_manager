@@ -88,9 +88,9 @@ export async function login(email, password) {
   }
 }
 
-export async function register(name, email, password) {
+export async function register(name, email, password, role = 'INTERN') {
   try {
-    const body = await fetchJson('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password, role: 'EMPLOYEE' }) });
+    const body = await fetchJson('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password, role }) });
     if (body?.token) token = body.token;
     if (body?.user?.id) activeUserId = body.user.id;
     return { user: mapProfileRow(body.user), token: body.token || '' };

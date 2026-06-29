@@ -68,9 +68,9 @@ export function AuthProvider({ children }) {
             return false;
         }
     }, []);
-    const registerFn = useCallback(async (name, email, password) => {
+    const registerFn = useCallback(async (name, email, password, role = 'INTERN') => {
         try {
-            const result = await api.register(name, email, password);
+            const result = await api.register(name, email, password, role);
             if (!result)
                 return null;
             api.setActiveUserId(result.user.id);
