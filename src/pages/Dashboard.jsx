@@ -314,6 +314,12 @@ function InternDashboard({ user }) {
 }
 
 function WorkspaceDashboard({ role }) {
+    const navigate = useNavigate();
+    const [tasks, setTasks] = useState([]);
+    const [projects, setProjects] = useState([]);
+    const [teams, setTeams] = useState([]);
+    const [taskFilter, setTaskFilter] = useState('all');
+
     useEffect(() => {
         const load = async () => {
             const [taskData, projectData, teamsData] = await Promise.all([

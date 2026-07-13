@@ -22,6 +22,7 @@ import Performance from "./pages/Performance";
 import Leaderboard from "./pages/Leaderboard";
 import Announcements from "./pages/Announcements";
 import UsersManagement from "./pages/UsersManagement";
+import PendingRequests from "./pages/PendingRequests";
 import AdminTaskProvider from "./pages/AdminTaskProvider";
 import Deployments from "./pages/Deployments";
 import ProjectSubmissions from "./pages/ProjectSubmissions";
@@ -56,7 +57,8 @@ const App = () => (<QueryClientProvider client={queryClient}>
               <Route path="/messages" element={<ProtectedRoute requiredPermission="chat:view"><Messages /></ProtectedRoute>}/>
               <Route path="/deployments" element={<ProtectedRoute requiredPermission="deployments:view"><Deployments /></ProtectedRoute>}/>
               <Route path="/project-submissions" element={<ProtectedRoute requiredPermission="projects:view"><ProjectSubmissions /></ProtectedRoute>}/>
-              <Route path="/users" element={<ProtectedRoute requiredPermission="users:manage"><UsersManagement /></ProtectedRoute>}/>
+              <Route path="/users" element={<ProtectedRoute adminOnly><UsersManagement /></ProtectedRoute>}/>
+              <Route path="/pending-requests" element={<ProtectedRoute adminOnly><PendingRequests /></ProtectedRoute>}/>
               <Route path="/admin-provider" element={<ProtectedRoute requiredPermission="projects:create"><AdminTaskProvider /></ProtectedRoute>}/>
               <Route path="/settings" element={<Settings />}/>
             </Route>

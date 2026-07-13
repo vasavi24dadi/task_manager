@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FloatingInput } from '@/components/ui/floating-field';
 import * as api from '@/services/api';
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, KeyRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractErrorMessage, roleLabel } from '@/lib/rbac';
 export default function UsersPage() {
@@ -20,6 +20,8 @@ export default function UsersPage() {
     };
     const [users, setUsers] = useState([]);
     const [search, setSearch] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +41,12 @@ export default function UsersPage() {
       }, [toast]);
       useEffect(() => { load(); }, [load]);
     const filtered = users
-      .filter(u => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
+      .filter(u => {
+        const matchesSearch = `${u.name || ''} ${u.email || ''}`.toLowerCase().includes(search.toLowerCase());
+        const matchesRole = roleFilter === 'all' || String(u.role || '').toUpperCase() === roleFilter;
+        const matchesStatus = statusFilter === 'all' || String(u.status || '').toLowerCase() === statusFilter;
+        return matchesSearch && matchesRole && matchesStatus;
+      })
       .sort((a, b) => {
         const roleDiff = (rolePriority[a.role] || 99) - (rolePriority[b.role] || 99);
         if (roleDiff !== 0)
@@ -72,6 +79,15 @@ export default function UsersPage() {
             toast({ title: extractErrorMessage(error), variant: 'destructive' });
         }
     };
+    const handleResetPassword = async (u) => {
+        try {
+            const result = await api.resetUserPassword(u.id);
+            toast({ title: 'Password reset', description: `Temporary password: ${result.temporaryPassword}` });
+        }
+        catch (error) {
+            toast({ title: extractErrorMessage(error), variant: 'destructive' });
+        }
+    };
     return (<div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -88,9 +104,32 @@ export default function UsersPage() {
         </Dialog>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
-        <Input placeholder="Search users…" className="pl-9 max-w-sm" value={search} onChange={e => setSearch(e.target.value)}/>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+          <Input placeholder="Search users…" className="pl-9 max-w-sm" value={search} onChange={e => setSearch(e.target.value)}/>
+        </div>
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-full md:w-[180px]"><SelectValue placeholder="Role" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All roles</SelectItem>
+            <SelectItem value="ADMIN">Admin</SelectItem>
+            <SelectItem value="MANAGER">Manager</SelectItem>
+            <SelectItem value="HR">HR</SelectItem>
+            <SelectItem value="INTERN">Intern</SelectItem>
+            <SelectItem value="EMPLOYEE">Employee</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full md:w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-lg border bg-card">
@@ -121,6 +160,7 @@ export default function UsersPage() {
                 </TableCell>
                 <TableCell className="text-muted-foreground text-xs">{new Date(u.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleResetPassword(u)}><KeyRound className="h-4 w-4"/></Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditing(u); setDialogOpen(true); }}><Pencil className="h-4 w-4"/></Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(u.id)}><Trash2 className="h-4 w-4"/></Button>
                 </TableCell>
@@ -156,8 +196,8 @@ function UserForm({ user, onSave }) {
                 toast({ title: 'User updated' });
             }
             else {
-                await api.createUser({ name, email, role, status });
-                toast({ title: 'User created' });
+                const created = await api.createUser({ name, email, role, status });
+                toast({ title: 'User created', description: created?.temporaryPassword ? `Temporary password: ${created.temporaryPassword}` : undefined });
             }
             onSave();
         }
@@ -174,6 +214,7 @@ function UserForm({ user, onSave }) {
             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Role"/></SelectTrigger>
             <SelectContent>
               <SelectItem value="INTERN">INTERN</SelectItem>
+              <SelectItem value="EMPLOYEE">EMPLOYEE</SelectItem>
               <SelectItem value="HR">HR</SelectItem>
               <SelectItem value="MANAGER">MANAGER</SelectItem>
               <SelectItem value="ADMIN">ADMIN</SelectItem>

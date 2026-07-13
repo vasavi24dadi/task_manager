@@ -59,13 +59,19 @@ export function AuthProvider({ children }) {
         try {
             const result = await api.login(email, password);
             if (!result)
-                return false;
+                return null;
+            if (result.requiresApproval) {
+                return result;
+            }
+            if (!result.user) {
+                return result;
+            }
             api.setActiveUserId(result.user.id);
             setState({ user: result.user, token: result.token, isAuthenticated: true });
-            return true;
+            return result;
         } catch (err) {
             console.error('[AuthContext] Login error:', err);
-            return false;
+            return null;
         }
     }, []);
     const registerFn = useCallback(async (name, email, password, role = 'INTERN') => {
@@ -73,9 +79,15 @@ export function AuthProvider({ children }) {
             const result = await api.register(name, email, password, role);
             if (!result)
                 return null;
+            if (result.requiresApproval) {
+                return result;
+            }
+            if (!result.user) {
+                return result;
+            }
             api.setActiveUserId(result.user.id);
             setState({ user: result.user, token: result.token, isAuthenticated: true });
-            return result.user;
+            return result;
         } catch (err) {
             console.error('[AuthContext] Register error:', err);
             return null;

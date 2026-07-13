@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar, } from '@/components/ui/sidebar';
-import { LayoutDashboard, FolderKanban, ListChecks, Users, Layers, LogOut, BarChart3, BriefcaseBusiness, MessagesSquare, Package, CalendarCheck, Star, Trophy, Megaphone, } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ListChecks, Users, Layers, LogOut, BarChart3, BriefcaseBusiness, MessagesSquare, Package, CalendarCheck, Star, Trophy, Megaphone, Clock3, } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { roleLabel } from '@/lib/rbac';
 const coreMenuItems = [
@@ -18,10 +18,11 @@ const coreMenuItems = [
     { title: 'Leaderboard', url: '/leaderboard', icon: Trophy, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER', 'TEAM_LEADER', 'TEAM_MEMBER', 'HR', 'INTERN'] },
 ];
 const adminMenuItems = [
-    { title: 'Users', url: '/users', icon: Users, roles: ['ADMIN', 'HR'] },
+    { title: 'Users', url: '/users', icon: Users, roles: ['ADMIN'] },
+    { title: 'Pending Requests', url: '/pending-requests', icon: Clock3, roles: ['ADMIN'] },
     { title: 'Teams', url: '/teams', icon: Users, roles: ['ADMIN'] },
-    { title: 'Task Provider', url: '/admin-provider', icon: BriefcaseBusiness, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER'] },
-    { title: 'Project Submissions', url: '/project-submissions', icon: Package, roles: ['ADMIN', 'MANAGER', 'PROJECT_MANAGER'] },
+    { title: 'Task Provider', url: '/admin-provider', icon: BriefcaseBusiness, roles: ['ADMIN'] },
+    { title: 'Project Submissions', url: '/project-submissions', icon: Package, roles: ['ADMIN'] },
 ];
 export function AppSidebar() {
     const { user, hasRole, logout } = useAuth();

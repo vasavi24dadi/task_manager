@@ -19,14 +19,18 @@ export default function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const registeredUser = await register(name, email, password, role);
+        const result = await register(name, email, password, role);
         setLoading(false);
-        if (registeredUser) {
-            const userRole = registeredUser.role ? roleLabel(registeredUser.role) : 'Team Member';
+        if (result?.requiresApproval) {
+            toast({ title: 'Signup received', description: result.message || 'Thanks for signing up! Your account is under review.' });
+            navigate('/login');
+        }
+        else if (result?.user) {
+            const userRole = result.user.role ? roleLabel(result.user.role) : 'Team Member';
             toast({ title: 'Account created', description: `Welcome to TaskFlow! You've been assigned as ${userRole}.` });
             navigate('/dashboard');
         } else {
-            toast({ title: 'Registration failed', description: 'Email may already be in use or there was a connection issue. Try again.', variant: 'destructive' });
+            toast({ title: 'Registration failed', description: result?.error || 'Email may already be in use or there was a connection issue. Try again.', variant: 'destructive' });
         }
     };
     return (<div className="min-h-screen flex items-center justify-center px-4 py-8">

@@ -31,7 +31,7 @@ function mapUserResponse(user, role) {
 router.post('/register', async (req, res) => {
   const { name, email, password, role: requestedRole } = req.body;
   const role = (requestedRole || 'INTERN').toString().trim().toUpperCase();
-  const allowedRoles = ['INTERN', 'HR', 'MANAGER'];
+  const allowedRoles = ['INTERN', 'EMPLOYEE', 'HR', 'MANAGER'];
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -50,7 +50,8 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Email already registered' });
     }
 
-    const roleRes = await pool.query('SELECT id, name FROM roles WHERE name=$1', [role]);
+    const resolvedRoleName = role === 'EMPLOYEE' ? 'INTERN' : role;
+    const roleRes = await pool.query('SELECT id, name FROM roles WHERE name=$1', [resolvedRoleName]);
     const roleRow = roleRes.rows[0];
     if (!roleRow) {
       return res.status(400).json({ error: 'Selected role is not available' });
@@ -61,7 +62,7 @@ router.post('/register', async (req, res) => {
       `INSERT INTO users (name, email, password_hash, role_id, status, created_at) 
        VALUES ($1, $2, $3, $4, $5, now()) 
        RETURNING id, name, email, status, avatar_url, created_at, last_login`,
-      [name || 'User', email, passwordHash, roleRow.id, 'active']
+      [name || 'User', email, passwordHash, roleRow.id, 'pending']
     );
     
     if (rows.length === 0) {
@@ -69,11 +70,11 @@ router.post('/register', async (req, res) => {
     }
 
     const user = rows[0];
-    const token = signToken({ sub: user.id, role: roleRow.name });
     
     return res.status(201).json({ 
-      user: mapUserResponse(user, roleRow.name), 
-      token 
+      user: mapUserResponse(user, roleRow.name),
+      requiresApproval: true,
+      message: 'Thanks for signing up! Your account is under review. You\'ll receive access once an administrator approves your request.'
     });
   } catch (err) {
     console.error('[REGISTER]', err.message || err);
@@ -105,7 +106,15 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    if (user.status !== 'active') {
+    const normalizedStatus = String(user.status || '').trim().toLowerCase();
+    if (normalizedStatus === 'pending') {
+      return res.status(403).json({
+        error: 'Your account is under review. Please wait until an administrator approves your request.',
+        requiresApproval: true,
+      });
+    }
+
+    if (normalizedStatus !== 'active') {
       return res.status(401).json({ error: 'User account is not active' });
     }
     

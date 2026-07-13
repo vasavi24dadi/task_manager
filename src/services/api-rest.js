@@ -15,13 +15,21 @@ async function fetchJson(path, opts = {}) {
     headers: { 'Content-Type': 'application/json', ...(opts.headers || {}), ...authHeaders() },
     ...opts,
   });
+  const text = await res.text().catch(() => '');
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = null;
+  }
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    const error = new Error(text || res.statusText);
+    const message = payload?.error || payload?.message || text || res.statusText;
+    const error = new Error(message);
     error.status = res.status;
+    error.payload = payload;
     throw error;
   }
-  return res.status === 204 ? null : res.json();
+  return res.status === 204 ? null : (payload ?? {});
 }
 
 function mapProfileRow(profile) {
@@ -79,24 +87,33 @@ export function setToken(t) {
 export async function login(email, password) {
   try {
     const body = await fetchJson('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    if (body?.requiresApproval) {
+      return { requiresApproval: true, message: body.message || body.error || 'Your account needs approval.' };
+    }
     if (body?.token) token = body.token;
     if (body?.user?.id) activeUserId = body.user.id;
     return { user: mapProfileRow(body.user), token: body.token || '' };
   } catch (err) {
     console.error('[LOGIN]', err.message || err);
-    return null;
+    if (err?.payload?.requiresApproval) {
+      return { requiresApproval: true, message: err.payload.message || err.payload.error || err.message };
+    }
+    return { error: err.message || 'Login failed' };
   }
 }
 
 export async function register(name, email, password, role = 'INTERN') {
   try {
     const body = await fetchJson('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password, role }) });
+    if (body?.requiresApproval) {
+      return { requiresApproval: true, message: body.message || 'Thanks for signing up! Your account is under review.' };
+    }
     if (body?.token) token = body.token;
     if (body?.user?.id) activeUserId = body.user.id;
     return { user: mapProfileRow(body.user), token: body.token || '' };
   } catch (err) {
     console.error('[REGISTER]', err.message || err);
-    return null;
+    return { error: err.message || 'Registration failed' };
   }
 }
 
@@ -134,9 +151,16 @@ export async function updateOwnProfile(data) {
   return mapProfileRow(updated);
 }
 
-export async function getUsers() {
+export async function getUsers(filters = {}) {
   try {
-    const users = await fetchJson('/users');
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, String(value));
+      }
+    });
+    const query = params.toString();
+    const users = await fetchJson(`/users${query ? `?${query}` : ''}`);
     return (users || []).map(mapProfileRow);
   } catch {
     return [];
@@ -154,7 +178,7 @@ export async function getUserById(id) {
 
 export async function createUser(data) {
   const created = await fetchJson('/users', { method: 'POST', body: JSON.stringify(data) });
-  return mapProfileRow(created);
+  return { ...mapProfileRow(created), temporaryPassword: created?.temporaryPassword };
 }
 
 export async function updateUser(id, data) {
@@ -165,6 +189,31 @@ export async function updateUser(id, data) {
 export async function deleteUser(id) {
   await fetchJson(`/users/${id}`, { method: 'DELETE' });
   return { ok: true };
+}
+
+export async function getPendingUsers() {
+  const users = await fetchJson('/users/pending');
+  return (users || []).map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    status: user.status,
+    createdAt: user.created_at || user.createdAt,
+  }));
+}
+
+export async function approvePendingUser(id) {
+  return fetchJson(`/users/pending/${id}/approve`, { method: 'POST' });
+}
+
+export async function rejectPendingUser(id) {
+  return fetchJson(`/users/pending/${id}/reject`, { method: 'POST' });
+}
+
+export async function resetUserPassword(id, password = 'Welcome123!') {
+  const body = await fetchJson(`/users/${id}/reset-password`, { method: 'POST', body: JSON.stringify({ password }) });
+  return body;
 }
 
 export async function deleteTask(id) {
