@@ -12,6 +12,7 @@ import * as api from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar, FolderKanban, UserPlus } from 'lucide-react';
 import { extractErrorMessage } from '@/lib/rbac';
+const isEnabledUser = (status) => ['active', 'approved'].includes(String(status || '').toLowerCase());
 const NEW_USER_WINDOW_DAYS = 45;
 export default function AdminTaskProvider() {
     const { user } = useAuth();
@@ -63,7 +64,7 @@ export default function AdminTaskProvider() {
 
     return map;
 }, [projects]);
-    const activeUsers = useMemo(() => users.filter((u) => u.role === 'TEAM_LEADER' && u.status === 'active'), [users]);
+    const activeUsers = useMemo(() => users.filter((u) => isEnabledUser(u.status) && u.role !== 'ADMIN'), [users]);
     const newUsers = useMemo(() => {
         const now = Date.now();
         const recentMs = NEW_USER_WINDOW_DAYS * 24 * 60 * 60 * 1000;

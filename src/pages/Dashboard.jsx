@@ -8,6 +8,7 @@ import * as api from '@/services/api';
 import { AlertTriangle, BriefcaseBusiness, CalendarClock, CheckCircle2, CircleDot, Clock3, ClipboardList, FolderKanban, ListChecks, Megaphone, ShieldCheck, Sparkles, TrendingUp, ArrowRight, Users } from 'lucide-react';
 import { roleLabel } from '@/lib/rbac';
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, } from 'recharts';
+const isEnabledUser = (status) => ['active', 'approved'].includes(String(status || '').toLowerCase());
 export default function Dashboard() {
     const { role, user } = useAuth();
     const normalizedRole = (role || '').toUpperCase();
@@ -56,7 +57,7 @@ function ManagerDashboard({ user }) {
     const activeTasks = tasks.filter((task) => task.status !== 'completed').length;
     const atRiskTasks = tasks.filter((task) => task.status !== 'completed' && new Date(task.dueDate).getTime() < Date.now()).length;
     const activeProjects = projects.length;
-    const peopleInView = teamMembers.filter((member) => member.status === 'active').length;
+    const peopleInView = teamMembers.filter((member) => isEnabledUser(member.status)).length;
 
     return (
         <div className="space-y-6">
@@ -157,7 +158,7 @@ function HRDashboard({ user }) {
         load();
     }, [user?.id]);
 
-    const activePeople = users.filter((person) => person.status === 'active').length;
+    const activePeople = users.filter((person) => isEnabledUser(person.status)).length;
     const pendingWork = tasks.filter((task) => task.status !== 'completed').length;
     const publishedUpdates = announcements.length;
 

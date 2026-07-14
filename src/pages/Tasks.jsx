@@ -11,6 +11,7 @@ import * as api from '@/services/api';
 import { CalendarDays, MessageSquare, Pencil, Plus, Search, Send, Trash2, } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractErrorMessage } from '@/lib/rbac';
+const isEnabledUser = (status) => ['active', 'approved'].includes(String(status || '').toLowerCase());
 import { FloatingInput, FloatingTextarea } from '@/components/ui/floating-field';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const columns = [
@@ -325,7 +326,7 @@ function TaskForm({ users, projects, task, onSave, }) {
           <Select value={assignedTo} onValueChange={setAssignedTo} disabled={!can('tasks:assign')}>
             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Assign To"/></SelectTrigger>
             <SelectContent>
-              {users.filter((u) => u.status === 'active' && u.role === 'TEAM_LEADER').map((member) => (<SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>))}
+              {users.filter((u) => isEnabledUser(u.status) && u.role === 'TEAM_LEADER').map((member) => (<SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>))}
             </SelectContent>
           </Select>
           {errors.assignee ? <p className="text-xs text-destructive">{errors.assignee}</p> : null}

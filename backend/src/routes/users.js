@@ -323,7 +323,7 @@ router.post('/pending/:id/approve', requireAuth, requireRole('ADMIN'), async (re
   const pool = getPool();
   try {
     const { rowCount } = await pool.query(
-      `UPDATE users SET status = 'active', updated_at = now() WHERE id = $1 AND status = 'pending'`,
+      `UPDATE users SET status = 'approved', updated_at = now() WHERE id = $1 AND status = 'pending'`,
       [id]
     );
     if (rowCount === 0) {

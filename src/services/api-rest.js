@@ -54,6 +54,8 @@ function toProjectRow(row) {
     createdAt: row.created_at,
     deadline: row.deadline,
     priority: row.priority,
+    status: row.status,
+    assignedUsers: row.assigned_users || row.assignedUsers || [],
   };
 }
 
@@ -253,7 +255,7 @@ export async function getProjectById(id) {
 
 export async function getProjectsForUser(userId) {
   const rows = await getProjects();
-  return rows.filter((project) => project.createdBy === userId || project.members?.includes(userId));
+  return rows.filter((project) => project.createdBy === userId || project.assignedUsers?.includes(userId) || project.members?.includes(userId));
 }
 
 export async function createProject(data) {

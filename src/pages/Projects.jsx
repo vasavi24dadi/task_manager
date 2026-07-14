@@ -13,6 +13,7 @@ import * as api from '@/services/api';
 import { Plus, Search, Calendar, Users, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractErrorMessage } from '@/lib/rbac';
+const isEnabledUser = (status) => ['active', 'approved'].includes(String(status || '').toLowerCase());
 export default function Projects() {
     const { role, can, user } = useAuth();
     const navigate = useNavigate();
@@ -186,7 +187,7 @@ function ProjectForm({ users, project, onSave }) {
             setIsLoading(false);
         }
     };
-    const activeUsers = users.filter(u => u.status === 'active');
+    const activeUsers = users.filter(u => isEnabledUser(u.status));
     const managers = activeUsers.filter(u => ['PROJECT_MANAGER', 'ADMIN'].includes(u.role));
     const assignableUsers = activeUsers;
     return (<form onSubmit={handleSubmit} className="space-y-4">

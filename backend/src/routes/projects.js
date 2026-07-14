@@ -98,49 +98,58 @@ router.post('/', requireAuth, async (req, res) => {
   }
 
   const pool = getPool();
+  const assignedUserIds = Array.isArray(assignedUsers) ? assignedUsers : [];
 
   try {
-    await pool.query('BEGIN');
+    const client = await pool.connect();
 
-    const projectResult = await pool.query(
-      `
-      INSERT INTO projects
-      (title, description, created_by, deadline, priority, status)
-      VALUES ($1,$2,$3,$4,$5,$6)
-      RETURNING *
-      `,
-      [
-        title,
-        description || null,
-        req.userId,
-        deadline || null,
-        priority || 'medium',
-        status || 'active',
-      ]
-    );
+    try {
+      await client.query('BEGIN');
 
-    const project = projectResult.rows[0];
-
-    for (const userId of assignedUsers) {
-      await pool.query(
+      const projectResult = await client.query(
         `
-        INSERT INTO project_members(project_id,user_id)
-        VALUES($1,$2)
-        ON CONFLICT DO NOTHING
+        INSERT INTO projects
+        (title, description, created_by, deadline, priority, status)
+        VALUES ($1,$2,$3,$4,$5,$6)
+        RETURNING *
         `,
-        [project.id, userId]
+        [
+          title,
+          description || null,
+          req.userId,
+          deadline || null,
+          priority || 'medium',
+          status || 'active',
+        ]
       );
+
+      const project = projectResult.rows[0];
+
+      for (const userId of assignedUserIds) {
+        await client.query(
+          `
+          INSERT INTO project_members(project_id,user_id)
+          VALUES($1,$2)
+          ON CONFLICT DO NOTHING
+          `,
+          [project.id, userId]
+        );
+      }
+
+      await client.query('COMMIT');
+
+      res.status(201).json({
+        ...project,
+        assignedUsers: assignedUserIds,
+      });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
     }
-
-    await pool.query('COMMIT');
-
-    res.status(201).json({
-      ...project,
-      assignedUsers,
-    });
   } catch (err) {
-    await pool.query('ROLLBACK');
-    console.error(err);
+    console.error('Error creating project:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

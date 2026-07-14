@@ -11,6 +11,7 @@ import * as api from '@/services/api';
 import { Plus, Search, Pencil, Trash2, KeyRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractErrorMessage, roleLabel } from '@/lib/rbac';
+const isEnabledUser = (status) => ['active', 'approved'].includes(String(status || '').toLowerCase());
 export default function UsersPage() {
     const rolePriority = {
       ADMIN: 1,
@@ -54,7 +55,7 @@ export default function UsersPage() {
         return String(a.name || '').localeCompare(String(b.name || ''));
       });
     const toggleStatus = async (u) => {
-        const newStatus = u.status === 'active' ? 'inactive' : 'active';
+        const newStatus = isEnabledUser(u.status) ? 'inactive' : 'active';
         try {
             await api.updateUser(u.id, { status: newStatus });
             toast({ title: `User ${newStatus === 'active' ? 'activated' : 'deactivated'}` });
@@ -154,7 +155,7 @@ export default function UsersPage() {
                 <TableCell><Badge variant={u.role === 'ADMIN' ? 'default' : 'secondary'} className="text-[10px]">{roleLabel(u.role)}</Badge></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Switch checked={u.status === 'active'} onCheckedChange={() => toggleStatus(u)}/>
+                    <Switch checked={isEnabledUser(u.status)} onCheckedChange={() => toggleStatus(u)}/>
                     <span className="text-xs text-muted-foreground capitalize">{u.status}</span>
                   </div>
                 </TableCell>

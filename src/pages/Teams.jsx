@@ -12,6 +12,7 @@ import * as api from '@/services/api';
 import { FolderKanban, Plus, Search, Trash2, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractErrorMessage } from '@/lib/rbac';
+const isEnabledUser = (status) => ['active', 'approved'].includes(String(status || '').toLowerCase());
 export default function Teams() {
     const { user } = useAuth();
     const { toast } = useToast();
@@ -52,7 +53,7 @@ export default function Teams() {
     useEffect(() => {
         load();
       }, [load]);
-    const activeUsers = useMemo(() => users.filter((teamMember) => teamMember.status === 'active' && teamMember.role !== 'TEAM_MEMBER'), [users]);
+    const activeUsers = useMemo(() => users.filter((teamMember) => isEnabledUser(teamMember.status) && teamMember.role !== 'TEAM_MEMBER'), [users]);
     const filteredTeams = teams.filter((team) => {
         const query = search.toLowerCase();
         return team.name.toLowerCase().includes(query) || team.description.toLowerCase().includes(query);

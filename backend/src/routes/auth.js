@@ -8,6 +8,11 @@ const { requireAuth } = require('../middleware/auth');
 const JWT_SECRET = process.env.JWT_SECRET || 'replace_me_with_strong_secret';
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
 
+function isLoginEnabledStatus(status) {
+  const normalized = String(status || '').trim().toLowerCase();
+  return normalized === 'active' || normalized === 'approved';
+}
+
 function signToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRES_IN });
 }
@@ -114,7 +119,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    if (normalizedStatus !== 'active') {
+    if (!isLoginEnabledStatus(normalizedStatus)) {
       return res.status(401).json({ error: 'User account is not active' });
     }
     
